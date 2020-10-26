@@ -3,23 +3,14 @@ title: "Session 2"
 output: html_notebook
 ---
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
-
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Ctrl+Shift+Enter*. 
-
 ```{r}
-plot(cars)
+library(tidyverse)
 ```
 
 ```{r}
-fit <- lm(cars$dist ~ cars$speed)
+(books <- BX_Books %>%
+  select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, Publisher) %>%
+  filter(`Year-Of-Publication` != 0, `Year-Of-Publication` <= 2020))
 ```
 
-```{r}
-plot(cars)
-abline(fit)
-```
-```{r}
-summary(fit)
-```
 
