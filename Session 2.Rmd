@@ -7,23 +7,20 @@ output: html_notebook
 library(tidyverse)
 ```
 
-```{r}
-vektor1 <- c(0,1,2,3,4,5,6,7,8,9)
-```
-
-
-```{r}
-vektor2 <- c(0,1,2,3,4,5,6,7,8,9,'X','x')
-```
-
-```{r}
-pattern<-"x|X"
-```
+## Wir benötigen im Dataframe books nicht die Spalten mit den URLs und bereinigen den Datensatz von Büchern, die angeblich in Jahr 0 oder weniger veröffentlicht wurden und auch von Büchern, bei denen die User ein Veröffentlichungsjahr nach 2020 angegeben haben. Außerdem muss die Spalte ISBN bereinigt werden. Wir haben keinen Business Experten, aber beim googlen kam heraus, dass ISBN Nummern nach 2007 13-stellig sind und davor 10-stellig. Wenn man sich den Datensatz anguckt, gibt es keine 13-stelligen ISBNs in dem Datensatz. Die alten ISBNs haben oft ein X am Ende. Daher nutzen wir grepl, um die Spalte ISBN von ISBNs zu reinigen, die nicht von Anfang bis Ende aus Ziffern von 0-9 oder ein X oder x bestehen. 
 
 ```{r}
 (books <- BX_Books %>%
   select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, 'Publisher')%>%
-  filter(`Year-Of-Publication` != 0, `Year-Of-Publication` <= 2020, grepl("^[0-9.]+$", ISBN, )))
+  filter(`Year-Of-Publication` > 0, `Year-Of-Publication` <= 2020, grepl("^[0-9Xx]+$", ISBN, )))
 ```
 
+```{r}
+rm(BX_Books)
+```
+
+```{r}
+(ratings <- BX_Book_Ratings %>%
+  inner_join(books))
+```
 
