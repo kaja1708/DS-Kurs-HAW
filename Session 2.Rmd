@@ -15,12 +15,117 @@ library(tidyverse)
   filter(`Year-Of-Publication` > 0, `Year-Of-Publication` <= 2020, grepl("^[0-9Xx]+$", ISBN, )))
 ```
 
-```{r}
-rm(BX_Books)
-```
+
+## Wir fügen die Dataframes mit den Ratings und books durch einen inner_join zusammen, um die ISBNs aus beiden Dataframes zu erhalten, die 10 Stellen haben und nur aus Ziffern bestehen und eventuell ein X am Ende beinhalten.
 
 ```{r}
 (ratings <- BX_Book_Ratings %>%
   inner_join(books))
 ```
+## Wir schauen uns an, wie viele Ratings jeder User abgegeben hat, indem wir nach der user-ID gruppieren und dann zeigen wir in der Spalte n, wie viele Ratings der User abgegeben hat in absteigender Reihenfolge. Im Vergleich zu seinem Notebook sind es dieselben User-IDs ganz oben, aber da ich die ISBNs gereinigt habe, sind die Werte in Spalte n weniger.
+
+```{r}
+(ratings_per_user <- ratings %>%
+  group_by(`User-ID`) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n)))
+```
+
+## BX_Users und ratings per User über ein left_Join zusammefügen und die User mit dem Wert 0 in Spalte n (also kein Rating abgegeben) rausfiltern - offenbar habe ich durch die Bereinigung der ISBNs auch schon die Users mit keiner Bewertung aussortiert. Es bleiben 90.676 Zeilen.
+
+```{r}
+(users <- BX_Users %>%
+  left_join(ratings_per_user) %>%
+  filter(n > 0))
+```
+
+## Wenn wir uns die Spalte "Age" näher anschauen, entscheide ich jetzt aus praktikablen Gründen, dass die Einträge mit "NA" für meine Zwecke unnütz sind, ich möchte ordentlich bereinigte Daten. Außerdem filter ich auch die Altersangaben über 100 raus und die Altersangaben mit 0. Ich denke, dass die User hier falsche Angaben gemacht haben. Ich lasse das Alter 1 drin - kann ja sein, dass die Kinder die Pixibücher schon bewerten :D Auch in der Spalte "Location" finde ich, ist das Land für uns am sinnvollsten zu nutzen. Daher eröffnen wir eine neue Spalte nur mit dem Land.
+
+```{r}
+(users <- users %>%
+  filter(!is.na(Age), `Age` <= 100, `Age` != 0) %>%
+  mutate(country = str_remove(Location,".*,")) %>%
+  filter(country != ""))
+```
+
+## Die Größe des Dataframes hat sich mit der Bereinigung der Daten um die Altersangaben von 0 nicht verkleinert, anscheinend war das schon vorher bereinigt. Verstehe nicht wieso... Wo wir das Land rausgeschnitten haben, würde es mich interessieren, wie viele User es pro Land gibt. In den USA, Kanada und Deutschland scheint es die meisten Bücherwürmer mit einer Meinung zu geben.
+##Wenn man einmal nach Land absteigend ordnet, ist zu sehen, dass einige Users ihre Länder nicht korrekt angegeben haben oder gar nicht. Einer lebt im Land "universe" - schön
+
+```{r}
+(users %>%
+  group_by(country) %>%
+  summarize(n = n()) %>%
+  arrange(desc(`country`)))
+```
+##Im Dataframe users einmal die Einträge in Spalte "country" um falsche Ausdrücke bereinigen.
+
+```{r}
+(users <- users %>%
+  mutate(country = str_extract(country, "\\w+")))
+```
+
+
+## Leider ändern sich die Ländernamen, zB United Kingdom wird nur United... Ist das jetzt schlimm?
+##Nochmal den bereinigten Dataframe anschauen - weniger Zeilen, aber zB mehr Einträge bei USA und Germany.
+```{r}
+(users %>%
+  group_by(country) %>%
+  summarize(n = n()) %>%
+  arrange(desc(`n`)))
+```
+
+## Wir schauen uns die Verteilung an, wie oft ein Rating pro User abgegeben wurde. 10916 Ratings pro User wurden nur einmal abgegeben. 1 Rating pro User wurde 50390 Mail abgegeben. Der User mit den pber 10.000 Votes sticht deutlich hervor. Der hat anscheinend viel Zeit oder macht das beruflich :)
+```{r}
+(ratings.distribution <- ratings %>%
+  group_by(`User-ID`) %>%
+  summarize(n = n()) %>%
+   arrange(desc(n)) %>%
+  group_by(n) %>%
+  summarize(m = n()) )
+```
+
+## Wir schauen uns in einem Histogram veranschaulicht an und cutten die Häufigkeit von Rating pro User bei 100, sonst würde das Histogram zerspringen.
+
+```{r}
+hist(ratings.distribution$n, breaks=100)
+```
+
+#Hausuafgabe 1
+
+## Kopiert aus meinem Notebook Session 1 und an kleinen Stellen angepasst.
+
+## Die Besten Bcüher: Ich gehe direkt zur der Fragestellung über, ob die Anzahl der Bewertungen auch eine Rolle spielt, daher der Median und nicht der Mean.
+
+```{r}
+(ratings %>%
+  filter(`Book-Rating` > 0) %>%
+  group_by(`Book-Title`) %>%
+  summarise (dieBestenBuecher = median(`Book-Rating`), wieviele = n()) %>%
+  arrange(desc(dieBestenBuecher), desc(wieviele)) %>%
+  filter(wieviele > 10))
+```
+
+## Die besten Autoren
+```{r}
+(ratings %>%
+  group_by(`Book-Author`) %>%
+  filter(`Book-Rating` > 0) %>%
+  summarise(dieBestenBuecher = median(`Book-Rating`), wieviele = n()) %>%
+  arrange(desc(dieBestenBuecher), desc(wieviele)) %>%
+  filter(wieviele > 10))
+```
+## Die besten Verlagshäuser.
+
+```{r}
+(ratings %>%
+  group_by(`Book-Title`, Publisher) %>%
+  filter(`Book-Rating` > 0) %>%
+  summarise(dieBestenBuecher = median(`Book-Rating`), wieviele = n()) %>%
+  arrange(desc(dieBestenBuecher), desc(wieviele)) %>%
+  filter(wieviele > 10) %>%
+   ungroup() %>%
+  select(Publisher) %>%
+  unique())
+```
+
 
