@@ -11,7 +11,7 @@ library(tidyverse)
 
 ```{r}
 (books <- BX_Books %>%
-  select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, 'Publisher')%>%
+  select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, `Publisher`) %>%
   filter(`Year-Of-Publication` > 0, `Year-Of-Publication` <= 2020, grepl("^[0-9Xx]+$", ISBN, )))
 ```
 
@@ -65,8 +65,7 @@ library(tidyverse)
 ```
 
 
-## Leider ändern sich die Ländernamen, zB United Kingdom wird nur United... Ist das jetzt schlimm?
-##Nochmal den bereinigten Dataframe anschauen - weniger Zeilen, aber zB mehr Einträge bei USA und Germany.
+## Durch str_extract suchen wir den ersten match raus, daher wird United Kingdom zu United.Nochmal den bereinigten Dataframe anschauen - weniger Zeilen, aber zB mehr Einträge bei USA und Germany.
 ```{r}
 (users %>%
   group_by(country) %>%
@@ -122,10 +121,32 @@ hist(ratings.distribution$n, breaks=100)
   filter(`Book-Rating` > 0) %>%
   summarise(dieBestenBuecher = median(`Book-Rating`), wieviele = n()) %>%
   arrange(desc(dieBestenBuecher), desc(wieviele)) %>%
-  filter(wieviele > 10) %>%
-   ungroup() %>%
-  select(Publisher) %>%
-  unique())
+  filter(wieviele > 10))
+```
+
+#Hausaufgabe 2
+
+## lineare Beziehung zwischen Anzahl Bücher pro Publisher und Anzahl Ratings, die die Bücher eines Publishers erhalten haben?
+## Ich nehme den Dataframe ratings, da ich den schon teilweise bereinigt habe. Offenbar sind die Verlage in verschiedenen Schreibformen hinterlegt. Hier müssten für die Verlage, die offensichtlich dieselben sind, die Anzahl der Bücher zusammengerechnet werden.
+
+```{r}
+(amount_books_per_publisher <- ratings %>%
+  group_by(`Publisher`) %>%
+  summarize(n = n()) %>%
+  arrange(desc(`Publisher`)))
+```
+
+
+
+## Haben ältere Bücher mehr Ratings, weil sie mehr Zeit hatten Ratings zu sammeln?
+## Die Frage ist eigentlich schon unlogisch, da es das Internet und damit die Bewertungsplattofrm noch nicht so lange gibt, wie es die meisten "älteren" Bücher gibt. Sie sind also quasi gleich auf wie jüngere Bücher, die ab dem gleichen Zeitpunkt bewertet werden konnten, nämlich ab dem Zeitpunkt, ab dem es die Bewertungsplattform gab. Wenn man sich den neuen Dataframe Ratings_older_books anschaut, sieht man zB, dass 2001, als die erste Verfilmung der Harry PoOtter Bücher (welche hier Top-Bewertungen erhalten haben), erschienen ist und im Juli 1999 das dritte Buch der Reihe.
+##Die meisten Bewertungen gibt es für Bücher, die zwischen 1984 und 2004 erschienen sind.
+
+```{r}
+(ratings_older_books <- ratings %>%
+   group_by(`Year-Of-Publication`) %>%
+   summarize(n = n()) %>%
+   arrange(desc(n)))
 ```
 
 
