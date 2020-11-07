@@ -23,7 +23,8 @@ library(tidyverse)
 
 ```{r}
 (users <- BX_Users %>%
-   filter(!is.na(Age)))
+   filter(!is.na(Age)) %>%
+   filter(`Age` < 100 | `Age` > 6))
 ```
 
 
@@ -35,6 +36,7 @@ library(tidyverse)
    filter(country != "") %>%
    select(-Location))
 ```
+
 
 ```{r}
 write_csv(all, "all.csv")
@@ -51,8 +53,10 @@ library(arulesViz)
 
 
 ```{r}
-all <- read_csv("all.csv")
+all <- read_csv("all.csv") %>%
+  filter(`Book-Rating` > 6)
 ```
+
 
 ```{r message=FALSE}
 i <- split(all$`Book-Title`,all$`User-ID`)
@@ -78,5 +82,4 @@ plot(basket_rules_hi, method="graph", main="Books")
 plot(basket_rules_hi, method="graph", main="Books", engine="interactive")
 ```
 
-```
 
