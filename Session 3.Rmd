@@ -1,0 +1,41 @@
+---
+title: "Session 3"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+```
+
+
+```{r}
+(books <- BX_Books %>%
+  select(ISBN, `Book-Title`, `Book-Author`, `Year-Of-Publication`, `Publisher`) %>%
+  filter(`Year-Of-Publication` > 0, `Year-Of-Publication` <= 2020, grepl("^[0-9Xx]+$", ISBN, )))
+```
+
+```{r}
+(ratings <- BX_Book_Ratings %>%
+  inner_join(books))
+```
+
+```{r}
+(users <- BX_Users %>%
+   filter(!is.na(Age)))
+```
+
+
+
+```{r}
+(all <- ratings %>%
+   left_join(users) %>%
+   mutate(country = str_remove(Location,".*,")) %>%
+   filter(country != "") %>%
+   select(-Location))
+```
+
+```{r}
+write_csv(all, "masterdataframe.csv")
+```
+
