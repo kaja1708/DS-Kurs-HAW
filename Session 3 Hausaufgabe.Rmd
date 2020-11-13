@@ -42,7 +42,7 @@ plot(basket_rules_hi, method="graph", main="Books")
 plot(basket_rules_hi, method="graph", main="Books", engine="interactive")
 ```
 
-## Generell finde ich den Dataframe all insbesondere bei Buchtitel und Autor sehr dirty. Viele Rechtschreibfehler oder andere Schreibweisen. Vielleicht kann man das durch reguläre Ausdrücke ändern.
+## Generell finde ich den Dataframe all insbesondere bei Buchtitel und Autor sehr verunreinigt. Viele Rechtschreibfehler oder andere Schreibweisen. Vielleicht kann man das durch reguläre Ausdrücke ändern.
 
 ## Bisher habe ich den Dataframe all bereits teilweise bereinigt: falsche ISBNs rausgenommen, und die NA Einträge bei Age und Book-Title. Das hat die Datenmenge bereits gut reduziert. Mit grepl ist es etwas aufwendig und die Zeilen, in denen die vorbestimmten Zeichen/Buchstaben nicht vorkommen werden gelöscht. Die Frage bleibt, ob man jetzt alle auch ausländischen Buchstaben, die vorkommen könnten, berücksichtigt hat.
 
@@ -51,12 +51,8 @@ plot(basket_rules_hi, method="graph", main="Books", engine="interactive")
   filter(grepl("^[a-zA-ZäÄüÜöÖ0-9'áéíúó&`.` `-` `,`]+$", `Book-Author`, )))
 ```
 
-
-```{r}
-(all_test2 <- all %>%
-  filter(str_replace_all(`Book-Author`, "[0-9]", "")))
-```
-
+## Die Bereinigung der Titel und Autoren ist sehr aufwendig. Und da ich bereits die ISBNs bereinigt habe, kann ich ausschließlich mit ihnen arbeiten und dadurch verschiedene Schreibweisen von Autoren und Buchtiteln umgehen.
+## Um die Autoren zu weiter zu empfehlen, die auch mehrheitlich als gut befunden wurden, müssen wir jetzt den Dataframe nach Autoren, die Anzahl ihrer Bewertungen in Abhängigkeit zu ihrem Modus sortieren. Nur die Autoren, die viele Ratings und einen hohen Modus erzielt haben, sind rein objektiv weiter zu empfehlen.
 
 
 
