@@ -10,9 +10,7 @@ output:
     df_print: paged
 ---
 
-```{r}
-writeLines('PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"', con = "~/.Renviron")
-```
+
 
 
 
@@ -22,6 +20,7 @@ library(tidyverse)
 library(e1071)
 library(caret)
 library(pROC)
+library(rpart.plot)
 ```
 
 ```{r}
@@ -104,8 +103,8 @@ titanic.df <- na.omit(titanic.df)
 ```
 
 ```{r}
-titanic.df <- titanic.df %>%
-  mutate(sex = ifelse(sex == "female", 1, 0))
+(titanic.df <- titanic.df %>%
+  mutate(sex = ifelse(sex == "female", 1, 0)))
 ```
 
 ```{r}
