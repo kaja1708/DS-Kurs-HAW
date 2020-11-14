@@ -1,0 +1,203 @@
+---
+title: "Session 4"
+output: html_notebook
+---
+
+---
+title: "Beispiel-Notebook EDA / Data Science 3. Session"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+writeLines('PATH="${RTOOLS40_HOME}\\usr\\bin;${PATH}"', con = "~/.Renviron")
+```
+
+
+
+# Libraries und Daten
+```{r}
+library(tidyverse)
+library(e1071)
+library(caret)
+library(pROC)
+```
+
+```{r}
+titanic <- read_delim("titanic.csv", ";", 
+    escape_double = FALSE, trim_ws = TRUE)
+```
+
+# Class Imbalance Check
+
+```{r}
+titanic %>%
+  group_by(survived) %>%
+  summarize(n = n())
+```
+# 1. Versuch mit SVM mit 2 Variablen
+
+```{r}
+(titanic.df <- titanic %>%
+  select(survived,pclass,age))
+```
+
+```{r}
+titanic.df <- titanic.df %>%
+  mutate(age = as.numeric(str_replace(age,",",".")))
+```
+
+```{r}
+titanic.df <- na.omit(titanic.df)
+```
+
+```{r}
+set.seed(107)
+inTrain <- createDataPartition(
+  y = titanic.df$survived,
+  p = .8,
+  list = FALSE)
+training <- titanic.df[ inTrain,]
+testing  <- titanic.df[-inTrain,]
+```
+
+```{r}
+model <- svm(survived ~ ., data = training)
+summary(model)
+pred <- predict(model, testing[,-1], probability = FALSE)
+```
+
+```{r}
+(test.results <- cbind(pred, testing))
+```
+
+```{r}
+test.results2 <- test.results %>%
+  mutate(pred = ifelse(pred>=0.5,1,0))
+table(test.results2$pred, testing$survived)
+```
+
+
+```{r}
+pROC_obj <- roc(test.results$survived, test.results$pred,
+            smoothed = TRUE,
+            ci=TRUE, ci.alpha=0.9, stratified=FALSE,
+            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
+            print.auc=TRUE, show.thres=TRUE)
+```
+
+# Mit mehr als zwei Features
+
+```{r}
+(titanic.df <- titanic %>%
+  select(survived,pclass,sex,age))
+```
+
+```{r}
+titanic.df <- titanic.df %>%
+  mutate(age = as.numeric(str_replace(age,",",".")))
+```
+
+```{r}
+titanic.df <- na.omit(titanic.df)
+```
+
+```{r}
+titanic.df <- titanic.df %>%
+  mutate(sex = ifelse(sex == "female", 1, 0))
+```
+
+```{r}
+set.seed(107)
+inTrain <- createDataPartition(
+  y = titanic.df$survived,
+  p = .8,
+  list = FALSE)
+training <- titanic.df[ inTrain,]
+testing  <- titanic.df[-inTrain,]
+```
+
+```{r}
+model <- svm(survived ~ ., data = training)
+summary(model)
+pred <- predict(model, testing[,-1], probability = FALSE)
+```
+
+```{r}
+(test.results <- cbind(pred, testing))
+```
+
+
+```{r}
+library(pROC)
+pROC_obj <- roc(test.results$survived, test.results$pred,
+            smoothed = TRUE,
+            ci=TRUE, ci.alpha=0.9, stratified=FALSE,
+            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
+            print.auc=TRUE, show.thres=TRUE)
+```
+
+# Naive Bayes
+
+```{r}
+my_training <- training %>%
+  mutate(survived = as.factor(survived))%>%
+  mutate(sex = as.factor(sex))%>%
+  mutate(pclass = as.factor(pclass)) %>%
+  mutate(age = as.factor(age))
+model <- naiveBayes(survived ~ ., data = my_training)
+model
+```
+
+```{r}
+my_testing <- testing %>%
+  mutate(sex = as.factor(sex)) %>%
+  mutate(pclass = as.factor(pclass))%>%
+  mutate(age = as.factor(age))
+pred <- predict(model, my_testing)
+table(pred, my_testing$survived)
+```
+
+
+```{r}
+(test.results <- cbind(pred, my_testing))
+```
+
+```{r}
+test.results <- test.results %>%
+  mutate(pred = as.numeric(pred))
+pROC_obj <- roc(as.numeric(as.character(test.results$survived)), test.results$pred,
+            smoothed = TRUE,
+            ci=TRUE, ci.alpha=0.9, stratified=FALSE,
+            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
+            print.auc=TRUE, show.thres=TRUE)
+```
+# Decision Tree
+
+```{r}
+library(rpart)
+library(rpart.plot)
+tree<- rpart(survived~., data = training, method = 'class')
+rpart.plot(tree)
+```
+```{r}
+dt_results <- predict(tree, testing[,-1], type = 'prob')
+head(model.results.dt <- cbind(testing,dt_results),500)
+```
+```{r}
+test.results2 <- test.results %>%
+  mutate(pred = ifelse(pred>=0.5,1,0))
+table(test.results2$pred, testing$survived)
+```
+
+
+```{r}
+pROC_obj <- roc(model.results.dt$survived,model.results.dt$`1`,
+            smoothed = TRUE,
+            # arguments for ci
+            ci=TRUE, ci.alpha=0.9, stratified=FALSE,
+            # arguments for plot
+            plot=TRUE, auc.polygon=TRUE, max.auc.polygon=TRUE, grid=TRUE,
+            print.auc=TRUE, show.thres=TRUE)
+```

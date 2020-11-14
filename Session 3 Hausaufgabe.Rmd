@@ -55,4 +55,3 @@ plot(basket_rules_hi, method="graph", main="Books", engine="interactive")
 ## Um die Autoren zu weiter zu empfehlen, die auch mehrheitlich als gut befunden wurden, müssen wir jetzt den Dataframe nach Autoren, die Anzahl ihrer Bewertungen in Abhängigkeit zu ihrem Modus sortieren. Nur die Autoren, die viele Ratings und einen hohen Modus erzielt haben, sind rein objektiv weiter zu empfehlen.
 
 
-
