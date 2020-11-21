@@ -56,3 +56,68 @@ age_grades %>%
   mutate(cluster = groups)
 ```
 
+
+#Weine
+
+```{r}
+wine_data <- read.table("https://archive.ics.uci.edu/ml/machine-learning-databases/wine/wine.data", sep=",")
+wine = wine_data[,-1] 
+```
+
+```{r}
+wine.scaled <- as.data.frame(scale(wine))
+```
+
+
+```{r}
+wss <- (nrow(wine.scaled)-1)*sum(apply(wine.scaled,2,var))
+  for (i in 2:10) wss[i] <- sum(kmeans(wine.scaled,
+                                       centers=i)$withinss)
+plot(1:10, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares")
+```
+
+
+```{r}
+wine.dist <- dist(wine.scaled, method="euclidean")
+wine.hc <- hclust(wine.dist, method = "ward.D2")
+plot(wine.hc)
+groups <- cutree(wine.hc, k=3) 
+rect.hclust(wine.hc, k=3, border="red")
+```
+
+```{r}
+wine %>%
+  mutate(cluster = groups) %>%
+  left_join(wine_data) %>%
+  select(cluster,V1)
+```
+
+
+
+
+
+# K Means Clustering
+
+
+
+
+```{r}
+k.means.fit <- kmeans(wine.scaled, 3) 
+```
+
+```{r}
+k.means.fit$size
+```
+
+```{r}
+clusplot(wine, k.means.fit$cluster, color=TRUE, shade=TRUE,
+labels=4, lines=0, main="K-means cluster plot")
+```
+
+
+```{r}
+table(wine_data$V1,k.means.fit$cluster)
+```
+
+
