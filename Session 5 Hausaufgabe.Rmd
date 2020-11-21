@@ -1,0 +1,34 @@
+---
+title: "Hausaufgabe 5"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(cluster)
+library(caret)
+```
+
+
+```{r}
+all <- read_csv("all.csv")
+```
+
+```{r}
+users_books <- all %>%
+  group_by(`Book-Title`) %>%
+  mutate(no_of_books = n()) %>%
+  filter(no_of_books > 49) %>%
+  filter(`Book-Rating` > 9) %>%
+  select(`User-ID`, `Book-Title`)
+  
+```
+
+```{r}
+users_books <- users_books %>%
+  unique()
+books_wide <- users_books %>%
+  mutate(i = 1) %>%
+  spread(`Book-Title`,i,fill=0)
+```
