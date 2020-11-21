@@ -51,3 +51,8 @@ groups <- cutree(age_grades.hc, k=3)
 rect.hclust(age_grades.hc, k=3, border="red")
 ```
 
+```{r}
+age_grades %>%
+  mutate(cluster = groups)
+```
+
