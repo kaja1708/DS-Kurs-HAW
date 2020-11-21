@@ -1,0 +1,53 @@
+---
+title: "Session 5"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(cluster)
+library(caret)
+```
+
+```{r}
+(age_grades <- data.frame(age = c(22,22,21,23,27,27,26,20), grades = c(1,3,5,1,5,3,4,1)))
+```
+
+```{r}
+(age_grades.dist <- dist(age_grades, method="euclidean"))
+```
+```{r}
+age_grades.hc <- hclust(age_grades.dist, method = "complete")
+plot(age_grades.hc)
+```
+
+
+
+```{r}
+age_grades.hc <- hclust(age_grades.dist, method = "complete")
+plot(age_grades.hc)
+groups <- cutree(age_grades.hc, k=3) 
+rect.hclust(age_grades.hc, k=3, border="red")
+```
+
+
+
+```{r}
+age_grades %>%
+  mutate(cluster = groups)
+```
+
+```{r}
+age_grades.scaled <- as.data.frame(scale(age_grades))
+```
+
+
+```{r}
+(age_grades.dist <- dist(age_grades.scaled, method="euclidean"))
+age_grades.hc <- hclust(age_grades.dist, method = "complete")
+plot(age_grades.hc)
+groups <- cutree(age_grades.hc, k=3) 
+rect.hclust(age_grades.hc, k=3, border="red")
+```
+
